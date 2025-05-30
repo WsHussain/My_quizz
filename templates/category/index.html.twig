@@ -13,20 +13,7 @@
 <div class="container mx-auto p-6">
     <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-8 justify-items-center">
         {% for categorie in categories %}
-            {% set imagePath = '' %}
-            {% if categorie.name == 'Culinaire' %}
-                {% set imagePath = 'culinaire.jpg' %}
-            {% elseif categorie.name == 'Harry Potter' %}
-                {% set imagePath = 'Harry_potter.jpg' %}
-            {% elseif categorie.name == 'Mots' %}
-                {% set imagePath = 'mots.jpg' %}
-            {% elseif categorie.name == 'Sigles Français' %}
-                {% set imagePath = 'sigles_français.jpg' %}
-            {% elseif categorie.name == 'Les Simpson' %}
-                {% set imagePath = 'the_simpson.jpg' %}
-            {% endif %}
-            
-            <div class="card-container" style="background-image: url('{{ asset('assets/img/' ~ imagePath) }}');">
+            <div class="card-container">
                 <div class="inner-border-overlay"></div>
 
                 <div class="content-area p-4 sm:p-5 lg:p-7">
