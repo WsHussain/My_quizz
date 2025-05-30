@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
+{% block title %}Categories{% endblock %}
+
+{% block body %}
+<div class="container mx-auto p-6">
+    <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-8 justify-items-center">
+        {% for categorie in categories %}
+            <div class="card-container">
+                <div class="inner-border-overlay"></div>
+
+                <div class="content-area p-4 sm:p-5 lg:p-7">
+                    <div class="gradient-overlay"></div>
+
+                    <div class="elevation-badge">
+                        ID: {{ categorie.id }}
+                    </div>
+
+                    <div class="text-block">
+                        <h1 class="font-serif-display text-2xl sm:text-3xl font-bold mb-2">
+                            {{ categorie.name }}
+                        </h1>
+                    </div>
+
+                    <a href="{{ path('app_categories', {'id': categorie.id}) }}" class="tour-button">
+                        Voir les questions
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5l7 7-7 7"></path>
+                            <path d="M5 12h14"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
