@@ -4,7 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
     {{ encore_entry_link_tags('app') }}
 {% endblock %}
@@ -19,35 +19,60 @@
             Retour aux catégories
         </a>
         <h1 class="text-3xl font-bold mt-4 mb-6">{{ categorie.name }}</h1>
+        
+        {% if previousResult is not empty %}
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <p class="text-blue-800">Votre meilleur score précédent : {{ previousResult.Result }}/{{ previousResult.totalQuestions }}</p>
+            </div>
+        {% endif %}
     </div>
 
-    <div class="space-y-8">
+    <form method="POST" action="{{ path('app_submit_answers', {'id': categorie.id}) }}" class="space-y-8">
         {% for question in questions %}
             <div class="bg-white rounded-lg shadow-lg p-6 transition-transform hover:scale-[1.02]">
                 <h2 class="text-xl font-semibold mb-4">{{ question.question }}</h2>
                 
                 <div class="ml-6 space-y-3">
                     {% for reponse in question.reponses %}
-                        <div class="flex items-center p-3 {% if reponse.reponseExpected %}bg-green-50{% else %}bg-gray-50{% endif %} rounded">
-                            <div class="flex-1">
+                        <div class="flex items-center p-3 bg-gray-50 rounded">
+                            <input type="radio" 
+                                   name="reponses[{{ question.id }}]" 
+                                   value="{{ reponse.id }}"
+                                   id="reponse_{{ reponse.id }}"
+                                   class="mr-3">
+                            <label for="reponse_{{ reponse.id }}" class="flex-1">
                                 <p class="text-gray-700">{{ reponse.reponse }}</p>
-                            </div>
-                            {% if reponse.reponseExpected %}
-                                <span class="ml-3 text-green-600">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                </span>
-                            {% endif %}
+                            </label>
                         </div>
                     {% endfor %}
                 </div>
+                
+                {% if app.session.flashbag.has('feedback_' ~ question.id) %}
+                    {% for message in app.session.flashbag.get('feedback_' ~ question.id) %}
+                        <div class="mt-4 p-3 rounded {% if message starts with '✓' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
         {% else %}
             <div class="text-center py-8">
                 <p class="text-gray-500">Aucune question n'a été trouvée pour cette catégorie.</p>
             </div>
         {% endfor %}
-    </div>
+
+        <div class="mt-8 text-center">
+            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition-colors">
+                Valider mes réponses
+            </button>
+        </div>
+
+        {% if score is defined %}
+            <div class="mt-8 text-center p-6 bg-white rounded-lg shadow-lg">
+                <h3 class="text-2xl font-bold">Votre score :</h3>
+                <p class="text-4xl font-bold mt-2">{{ score }}/{{ total_questions }}</p>
+            </div>
+        {% endif %}
+    </form>
 </div>
 {% endblock %}
