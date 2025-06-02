@@ -27,9 +27,7 @@
                         <h1 class="font-serif-display text-2xl sm:text-3xl font-bold mb-2">
                             {{ categorie.name }}
                         </h1>
-                    </div>
-
-                    <a href="{{ path('app_categories', {'id': categorie.id}) }}" class="tour-button">
+                    </div>                    <a href="{{ path('app_categorie_show', {'id': categorie.id}) }}" class="tour-button">
                         Voir les questions
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 5l7 7-7 7"></path>
