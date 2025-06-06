@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
+use App\Repository\ActivityRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -17,14 +17,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminDashboardController extends AbstractController
 {
     #[Route('/admin/dashboard', name: 'app_admin_dashboard')]
-    public function index(UserRepository $userRepository): Response
+    public function index(UserRepository $userRepository, ActivityRepository $activityRepository): Response
     {
         return $this->render('admin_dashboard/index.html.twig', [
             'controller_name' => 'AdminDashboardController',
             'users' => $userRepository->findAll(),
+            'activities' => $activityRepository->findAll(),
         ]);
     }
-
+    
 
     #[Route('/admin/user/{id}/reminder', name: 'connexion_reminder', methods: ['POST'] )]
     public function reminder(User $user, EntityManagerInterface $entityManager, MailerInterface $mailer): Response{

@@ -11,7 +11,26 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Statistiques</h5>
-                        {# add content here #}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Utilisateur</th>
+                                    <th>Action</th>
+                                    <th>Date</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for activity in activities %}
+                                <tr>
+                                    <td>{{ activity.user.email }}</td>
+                                    <td>{{ activity.action }}</td>
+                                    <td>{{ activity.actionDate|date('Y-m-d H:i:s') }}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
