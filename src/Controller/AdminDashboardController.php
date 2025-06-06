@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\ActivityRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,6 +13,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+
 
 #[IsGranted('ROLE_ADMIN')]
 class AdminDashboardController extends AbstractController
@@ -25,7 +28,7 @@ class AdminDashboardController extends AbstractController
             'activities' => $activityRepository->findAll(),
         ]);
     }
-    
+
 
     #[Route('/admin/user/{id}/reminder', name: 'connexion_reminder', methods: ['POST'] )]
     public function reminder(User $user, EntityManagerInterface $entityManager, MailerInterface $mailer): Response{
