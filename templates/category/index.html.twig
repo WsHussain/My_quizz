@@ -11,6 +11,17 @@
 
 {% block body %}
 <div class="container mx-auto p-6">
+    <div class="flex justify-end mb-6">
+        <a href="{{ path('app_login') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-150 ease-in-out">
+            <span>Connexion</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+        </a>
+    </div>
+
     <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-8 justify-items-center">
         {% for categorie in categories %}
             <div class="card-container">

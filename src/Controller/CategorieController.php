@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CategorieController extends AbstractController 
 {
-    #[Route('/categories', name: 'app_categories')]
+    #[Route('/', name: 'app_categories')]
     public function index(CategorieRepository $categorieRepository, QuizResultRepository $quizResultRepository): Response
     {
         $categories = $categorieRepository->findAll();

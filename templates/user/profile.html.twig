@@ -5,6 +5,9 @@
 {% block body %}
     <div class="container mt-4">
         <h1>Mon Profil</h1>
+        {% if 'ROLE_ADMIN' in app.user.roles %}
+            <a href="{{ path('app_admin_dashboard') }}">Admin dashboard</a>
+        {% endif %}
         
         {% for type, messages in app.flashes %}
             {% for message in messages %}
