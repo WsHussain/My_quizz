@@ -27,6 +27,9 @@ class Categorie
     #[ORM\OneToMany(targetEntity: QuizResult::class, mappedBy: 'categorie')]
     private Collection $Result;
 
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $added_by = null;
+
     public function __construct()
     {
         $this->questions = new ArrayCollection();
@@ -102,6 +105,17 @@ class Categorie
             }
         }
 
+        return $this;
+    }
+
+    public function getAddedBy(): ?string
+    {
+        return $this->added_by;
+    }
+
+    public function setAddedBy(?string $added_by): static
+    {
+        $this->added_by = $added_by;
         return $this;
     }
 }
