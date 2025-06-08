@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ categorie.name }} - Questions{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <a href="{{ path('app_categories') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Retour aux catégories
+        </a>
+        <h1 class="text-3xl font-bold mt-4 mb-6">{{ categorie.name }}</h1>
+          {% if previousResult is defined and previousResult is not empty %}
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                <p class="text-blue-800">Votre meilleur score précédent : {{ previousResult.Result }}/{{ previousResult.totalQuestions }}</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if completed is defined and completed %}
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold text-center mb-6">Quiz terminé !</h2>
+            <p class="text-xl text-center mb-8">Votre score : {{ score.correct }}/{{ score.total }}</p>
+            
+            <div class="space-y-6">
+                {% for answer in previousAnswers %}
+                    <div class="p-4 rounded-lg {% if answer.correct %}bg-green-50{% else %}bg-red-50{% endif %}">
+                        <p class="font-semibold">Question : {{ answer.question }}</p>
+                        <p class="mt-2">Votre réponse : {{ answer.selectedAnswer }}</p>
+                        {% if not answer.correct %}
+                            <p class="mt-2 text-green-700">La bonne réponse était : {{ answer.correctAnswer }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-8 text-center">
+                <a href="{{ path('app_restart_quiz', {'id': categorie.id}) }}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition-colors">
+                    Recommencer le quiz
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="mb-4 text-center">
+            <p class="text-lg">Question {{ questionIndex + 1 }}/{{ totalQuestions }}</p>
+        </div>
+
+        <form method="POST" action="{{ path('app_submit_answers', {'id': categorie.id}) }}" class="space-y-8">
+            <div class="bg-white rounded-lg shadow-lg p-6 transition-transform hover:scale-[1.02]">
+                <h2 class="text-xl font-semibold mb-4">{{ question.question }}</h2>
+                
+                <div class="ml-6 space-y-3">
+                    {% for reponse in question.reponses %}
+                        <div class="flex items-center">
+                            <input type="radio" 
+                                   id="reponse_{{ reponse.id }}" 
+                                   name="reponse" 
+                                   value="{{ reponse.id }}" 
+                                   class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                   required>
+                            <label for="reponse_{{ reponse.id }}" class="ml-2 text-gray-700">
+                                {{ reponse.reponse }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition-colors">
+                    Valider la réponse
+                </button>
+            </div>
+        </form>
+
+        {% if previousAnswers is not empty %}
+            <div class="mt-8 space-y-4">
+                <h3 class="text-xl font-semibold mb-4">Réponses précédentes :</h3>
+                {% for answer in previousAnswers %}
+                    <div class="p-4 rounded-lg {% if answer.correct %}bg-green-50{% else %}bg-red-50{% endif %}">
+                        <p class="font-semibold">Question : {{ answer.question }}</p>
+                        <p class="mt-2">Votre réponse : {{ answer.selectedAnswer }}</p>
+                        {% if not answer.correct %}
+                            <p class="mt-2 text-green-700">La bonne réponse était : {{ answer.correctAnswer }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
