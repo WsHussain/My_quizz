@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Mon Profil</h1>
+        
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : type }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Informations actuelles</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Email: {{ user.email }}</li>
+                            <li class="list-group-item">Roles: {{ user.roles|join(', ') }}</li>
+                            <li class="list-group-item">Statut: {% if user.isVerified %}Vérifié{% else %}Non vérifié{% endif %}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Modifier mes informations</h5>
+                        
+                        {{ form_start(form) }}
+                            <div class="mb-3">
+                                {{ form_row(form.email) }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form_row(form.plainPassword) }}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <a href="{{ path('app_logout') }}" class="btn btn-danger mt-3">Déconnexion</a>
+    </div>
+{% endblock %}
