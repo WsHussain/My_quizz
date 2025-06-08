@@ -42,7 +42,7 @@ class CategorieController extends AbstractController
     }
 
     #[Route('/categorie/{id}', name: 'app_categorie_show')]
-    public function show(int $id, Request $request, CategorieRepository $categorieRepository, QuizResultRepository $quizResultRepository): Response
+    public function show(int $id, Request $request, CategorieRepository $categorieRepository, QuizResultRepository $quizResultRepository, EntityManagerInterface $entityManager): Response
     {
         $categorie = $categorieRepository->find($id);
         
@@ -50,6 +50,9 @@ class CategorieController extends AbstractController
             throw $this->createNotFoundException('Catégorie non trouvée');
         }
 
+        $questions = $categorie->getQuestions()->toArray();
+        $session = $request->getSession();
+        
         $previousResult = null;
         if ($this->getUser()) {
             $previousResult = $quizResultRepository->findOneBy([
@@ -57,11 +60,58 @@ class CategorieController extends AbstractController
                 'categorie' => $categorie
             ]);
         }
+        
+        $currentQuestionIndex = $session->get('current_question_index_' . $id, 0);
+        $previousAnswers = $session->get('previous_answers_' . $id, []);
+        
+        if ($currentQuestionIndex >= count($questions)) {
+            $totalQuestions = count($questions);
+            $correctAnswers = array_sum(array_map(function($answer) {
+                return $answer['correct'] ? 1 : 0;
+            }, $previousAnswers));
+            
+            if ($this->getUser()) {
+                $existingResult = $previousResult;
+                
+                if (!$existingResult || $correctAnswers > $existingResult->getResult()) {
+                    if (!$existingResult) {
+                        $existingResult = new QuizResult();
+                        $existingResult->setUser($this->getUser());
+                        $existingResult->setCategorie($categorie);
+                    }
+                    
+                    $existingResult->setResult($correctAnswers);
+                    $existingResult->setTotalQuestions($totalQuestions);
+                    
+                    $entityManager->persist($existingResult);
+                    $entityManager->flush();
+                }
+            }
+            
+            $session->remove('current_question_index_' . $id);
+            $session->remove('previous_answers_' . $id);
+            
+            return $this->render('category/show.html.twig', [
+                'categorie' => $categorie,
+                'completed' => true,
+                'score' => [
+                    'correct' => $correctAnswers,
+                    'total' => $totalQuestions
+                ],
+                'previousAnswers' => $previousAnswers,
+                'previousResult' => $previousResult
+            ]);
+        }
+
+        $currentQuestion = $questions[$currentQuestionIndex];
 
         return $this->render('category/show.html.twig', [
             'categorie' => $categorie,
-            'questions' => $categorie->getQuestions(),
-            'previousResult' => $previousResult
+            'question' => $currentQuestion,
+            'questionIndex' => $currentQuestionIndex,
+            'totalQuestions' => count($questions),
+            'previousResult' => $previousResult,
+            'previousAnswers' => $previousAnswers
         ]);
     }
 
@@ -71,78 +121,51 @@ class CategorieController extends AbstractController
         Request $request, 
         CategorieRepository $categorieRepository, 
         ReponseRepository $reponseRepository,
-        QuizResultRepository $quizResultRepository,
         EntityManagerInterface $entityManager
     ): Response {
         $categorie = $categorieRepository->find($id);
-        
         if (!$categorie) {
             throw $this->createNotFoundException('Catégorie non trouvée');
         }
 
-        $reponses = $request->request->all('reponses');
-        $score = 0;
-        $questions = $categorie->getQuestions();
-        $total_questions = count($questions);
+        $session = $request->getSession();
+        $questions = $categorie->getQuestions()->toArray();
+        $currentQuestionIndex = $session->get('current_question_index_' . $id, 0);
+        $previousAnswers = $session->get('previous_answers_' . $id, []);
 
-        foreach ($questions as $question) {
-            $questionId = $question->getId();
-            
-            if (!isset($reponses[$questionId])) {
-                $this->addFlash('feedback_' . $questionId, '✗ Veuillez sélectionner une réponse');
-                continue;
-            }
-
-            $reponse = $reponseRepository->find($reponses[$questionId]);
-            
-            if (!$reponse) {
-                continue;
-            }
-
-            if ($reponse->isReponseExpected()) {
-                $score++;
-                $this->addFlash('feedback_' . $questionId, '✓ Bonne réponse !');
-            } else {
-                $this->addFlash('feedback_' . $questionId, '✗ Mauvaise réponse');
-            }
+        if ($currentQuestionIndex >= count($questions)) {
+            return $this->redirectToRoute('app_categorie_show', ['id' => $id]);
         }
 
-        $previousResult = null;
-        if ($this->getUser()) {
-            $previousResult = $quizResultRepository->findOneBy([
-                'user' => $this->getUser(),
-                'categorie' => $categorie
-            ]);
+        $currentQuestion = $questions[$currentQuestionIndex];
+        $selectedAnswerId = $request->request->get('reponse');
+        $selectedAnswer = $reponseRepository->find($selectedAnswerId);
 
-            if (!$previousResult) {
-                $previousResult = new QuizResult();
-                $previousResult->setUser($this->getUser());
-                $previousResult->setCategorie($categorie);
-            }
-
-            $previousResult->setResult($score);
-            $previousResult->setTotalQuestions($total_questions);
-            $entityManager->persist($previousResult);
-            $entityManager->flush();
+        if (!$selectedAnswer || $selectedAnswer->getQuestion() !== $currentQuestion) {
+            throw $this->createNotFoundException('Réponse non trouvée');
         }
 
-        if (!$this->getUser()) {
-            $session = $request->getSession();
-            $localResults = $session->get('quiz_results', []);
-            $localResults[$categorie->getId()] = [
-                'score' => $score,
-                'total' => $total_questions,
-                'date' => new \DateTime()
-            ];
-            $session->set('quiz_results', $localResults);
-        }
+        $previousAnswers[] = [
+            'question' => $currentQuestion->getQuestion(),
+            'selectedAnswer' => $selectedAnswer->getReponse(),            'correct' => $selectedAnswer->isReponseExpected(),
+            'correctAnswer' => $currentQuestion->getReponses()->filter(function($r) {
+                return $r->isReponseExpected();
+            })->first()->getReponse()
+        ];
 
-        return $this->render('category/show.html.twig', [
-            'categorie' => $categorie,
-            'questions' => $questions,
-            'score' => $score,
-            'total_questions' => $total_questions,
-            'previousResult' => $previousResult
-        ]);
+        $session->set('current_question_index_' . $id, $currentQuestionIndex + 1);
+        $session->set('previous_answers_' . $id, $previousAnswers);
+
+        return $this->redirectToRoute('app_categorie_show', ['id' => $id]);
+    }
+
+    #[Route('/categorie/{id}/restart', name: 'app_restart_quiz')]
+    public function restartQuiz(int $id, Request $request): Response
+    {
+        $session = $request->getSession();
+        $session->remove('current_question_index_' . $id);
+        $session->remove('previous_answers_' . $id);
+
+        return $this->redirectToRoute('app_categorie_show', ['id' => $id]);
     }
 }

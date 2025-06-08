@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\ActivityRepository;
+use App\Entity\Categorie;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Request;
 
 
 
@@ -73,6 +75,27 @@ class AdminDashboardController extends AbstractController
 
         $this->addFlash('success', 'Les rôles de l\'utilisateur ont été mis à jour.');
 
+        return $this->redirectToRoute('app_admin_dashboard');
+    }
+
+    #[Route('/admin/category/add', name: 'app_admin_add_category', methods: ['POST'])]
+    public function addCategory(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $categoryName = $request->request->get('category_name');
+        
+        if (!$categoryName) {
+            $this->addFlash('error', 'Le nom de la catégorie est requis');
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
+        $category = new Categorie();
+        $category->setName($categoryName);
+        $category->setAddedBy($this->getUser()->getEmail());
+
+        $entityManager->persist($category);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'La catégorie a été créée avec succès');
         return $this->redirectToRoute('app_admin_dashboard');
     }
 }
