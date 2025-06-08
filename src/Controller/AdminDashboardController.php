@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\ActivityRepository;
 use App\Entity\Categorie;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,15 +16,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
 
+
+
 #[IsGranted('ROLE_ADMIN')]
 class AdminDashboardController extends AbstractController
 {
     #[Route('/admin/dashboard', name: 'app_admin_dashboard')]
-    public function index(UserRepository $userRepository): Response
+    public function index(UserRepository $userRepository, ActivityRepository $activityRepository): Response
     {
         return $this->render('admin_dashboard/index.html.twig', [
             'controller_name' => 'AdminDashboardController',
             'users' => $userRepository->findAll(),
+            'activities' => $activityRepository->findAll(),
         ]);
     }
 
